@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carrossel de Notícias</title>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f0f0f0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem;
+        }
+
+        .carousel-container {
+            position: relative;
+            max-width: 800px;
+            width: 100%;
+            margin: 2rem auto;
+        }
+
+        .carousel {
+            display: flex;
+            transition: transform 0.5s ease-in-out;
+            gap: 1rem;
+            overflow: hidden;
+        }
+
+        .card {
+            flex: 0 0 calc(100% - 2rem);
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin: 0 1rem;
+            padding: 1.5rem;
+            min-height: 300px;
+        }
+
+        .card img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .nav-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(0,0,0,0.5);
+            color: white;
+            border: none;
+            padding: 1rem;
+            cursor: pointer;
+            border-radius: 50%;
+            transition: background 0.3s;
+        }
+
+        .nav-btn:hover {
+            background: rgba(0,0,0,0.8);
+        }
+
+        #prevBtn {
+            left: 10px;
+        }
+
+        #nextBtn {
+            right: 10px;
+        }
+
+        .icon {
+            vertical-align: middle;
+            font-size: 1.2rem;
+            margin-right: 0.3rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="carousel-container">
+        <div class="carousel"></div>
+        <button class="nav-btn" id="prevBtn">‹</button>
+        <button class="nav-btn" id="nextBtn">›</button>
+    </div>
+
+    <script>
+        const eventos = [
+            {
+                title: "Evento 1",
+                description: "Descrição do primeiro evento",
+                date: "01/01/2024",
+                time: "19:00",
+                location: "Auditório Principal",
+                image: "https://picsum.photos/800/400?random=1"
+            },
+            {
+                title: "Evento 2",
+                description: "Descrição do segundo evento",
+                date: "02/01/2024",
+                time: "20:30",
+                location: "Sala de Conferências",
+                image: "https://picsum.photos/800/400?random=2"
+            },
+            {
+                title: "Evento 3",
+                description: "Descrição do terceiro evento",
+                date: "03/01/2024",
+                time: "18:00",
+                location: "Laboratório de Inovação",
+                image: "https://picsum.photos/800/400?random=3"
+            }
+        ];
+
+        const carousel = document.querySelector('.carousel');
+        let autoPlayInterval;
+
+        function createCards() {
+            eventos.forEach(event => {
+                const card = document.createElement('div');
+                card.classList.add('card');
+                card.innerHTML = `
+                    <img src="${event.image}" alt="${event.title}">
+                    <div class="info">
+                        <h3>${event.title}</h3>
+                        <p>${event.description}</p>
+                        <p>
+                            <span class="material-symbols-outlined icon">event</span>
+                            ${event.date} às ${event.time}
+                            <span class="material-symbols-outlined icon">pin_drop</span>
+                            ${event.location}
+                        </p>
+                    </div>
+                `;
+                carousel.appendChild(card);
+            });
+        }
+
+        let index = 0;
+        function nextCard() {
+            index = (index + 1) % eventos.length;
+            updateCarousel();
+        }
+
+        function prevCard() {
+            index = (index - 1 + eventos.length) % eventos.length;
+            updateCarousel();
+        }
+
+        function updateCarousel() {
+            const cardWidth = document.querySelector('.card').offsetWidth + 32; // 32 = gap + margins
+            carousel.style.transform = `translateX(-${index * cardWidth}px)`;
+        }
+
+        function startAutoPlay() {
+            autoPlayInterval = setInterval(nextCard, 5000);
+        }
+
+        function stopAutoPlay() {
+            clearInterval(autoPlayInterval);
+        }
+
+        function resetAutoPlay() {
+            stopAutoPlay();
+            startAutoPlay();
+        }
+
+        // Event Listeners
+        document.getElementById('nextBtn').addEventListener('click', () => {
+            nextCard();
+            resetAutoPlay();
+        });
+
+        document.getElementById('prevBtn').addEventListener('click', () => {
+            prevCard();
+            resetAutoPlay();
+        });
+
+        carousel.addEventListener('mouseenter', stopAutoPlay);
+        carousel.addEventListener('mouseleave', startAutoPlay);
+
+        // Touch events
+        let startX;
+        carousel.addEventListener('touchstart', (e) => {
+            startX = e.touches[0].clientX;
+            stopAutoPlay();
+        });
+
+        carousel.addEventListener('touchend', (e) => {
+            const endX = e.changedTouches[0].clientX;
+            const diff = startX - endX;
+            
+            if (Math.abs(diff) > 50) {
+                diff > 0 ? nextCard() : prevCard();
+            }
+            startAutoPlay();
+        });
+
+        // Initialize
+        createCards();
+        startAutoPlay();
+        window.addEventListener('resize', updateCarousel);
+    </script>
+</body>
+</html>
